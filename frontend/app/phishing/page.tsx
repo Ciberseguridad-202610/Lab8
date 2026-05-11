@@ -32,12 +32,14 @@ export default function PhishingPage() {
     setError('');
 
     const sessionId = getOrCreateSessionId();
+    const form = e.currentTarget;
 
-    // IMPORTANTE: Las credenciales del formulario se descartan aquí.
-    // Solo registramos el evento de envío — nunca el usuario ni la contraseña.
-    await logInteraction(sessionId, 'FORM_SUBMIT');
+    // Extraemos el email para enviar el correo de seguimiento automático.
+    // La contraseña se descarta aquí — nunca sale del navegador.
+    const email = (form.elements.namedItem('email') as HTMLInputElement)?.value ?? undefined;
 
-    // Redirigir de inmediato a la página educativa
+    await logInteraction(sessionId, 'FORM_SUBMIT', email);
+
     router.push('/awareness');
   };
 

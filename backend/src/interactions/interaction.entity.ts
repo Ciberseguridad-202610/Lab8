@@ -31,6 +31,10 @@ export class Interaction {
   @Column({ nullable: true })
   ipHash: string;
 
+  // Correo del participante — almacenado únicamente para enviar el seguimiento formativo
+  @Column({ nullable: true })
+  submitterEmail: string;
+
   // El usuario fue redirigido a la página educativa
   @Column({ default: false })
   redirectedToAwareness: boolean;

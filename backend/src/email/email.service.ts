@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { SendFollowupDto } from './dto/send-followup.dto';
+import { SendLureDto } from './dto/send-lure.dto';
 
 @Injectable()
 export class EmailService {
@@ -18,6 +19,19 @@ export class EmailService {
     });
   }
 
+  async sendLure(dto: SendLureDto): Promise<{ messageId: string }> {
+    const phishingUrl = `${this.config.get('FRONTEND_URL', 'http://localhost:3000')}/phishing`;
+    const info = await this.transporter.sendMail({
+      from: '"IT Security - CorpTech" <it-security@corptech.com>',
+      to: dto.to,
+      subject: 'Acción requerida: Verificación de cuenta corporativa',
+      html: this.buildLureTemplate(phishingUrl),
+      text: `Estimado usuario,\n\nSe ha detectado actividad inusual en tu cuenta. Por favor verifica tu identidad en el siguiente enlace:\n${phishingUrl}\n\nEste enlace expira en 24 horas.\n\nEquipo de IT - CorpTech S.A.`,
+    });
+    this.logger.log(`Correo de cebo enviado - messageId: ${info.messageId} | para: ${dto.to}`);
+    return { messageId: info.messageId };
+  }
+
   async sendFollowup(dto: SendFollowupDto): Promise<{ messageId: string; preview?: string }> {
     const info = await this.transporter.sendMail({
       from: '"Seguridad Corporativa [SIMULACIÓN LAB]" <security-sim@corptech-lab.local>',
@@ -32,6 +46,49 @@ export class EmailService {
     // nodemailer.getTestMessageUrl devuelve URL si se usa cuenta Ethereal
     const preview = nodemailer.getTestMessageUrl(info) as string | false;
     return { messageId: info.messageId, ...(preview ? { preview } : {}) };
+  }
+
+  private buildLureTemplate(phishingUrl: string): string {
+    return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 0; }
+    .wrapper { max-width: 580px; margin: 24px auto; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .header { background: #1a237e; padding: 20px 28px; display: flex; align-items: center; gap: 12px; }
+    .logo { background: white; color: #1a237e; font-weight: 800; font-size: 16px; padding: 6px 10px; border-radius: 6px; letter-spacing: -0.5px; }
+    .header-title { color: white; font-size: 14px; opacity: 0.9; margin: 0; }
+    .body { padding: 28px; }
+    .alert-bar { background: #fff3e0; border-left: 4px solid #e65100; padding: 12px 16px; border-radius: 0 6px 6px 0; margin-bottom: 20px; font-size: 13px; color: #bf360c; font-weight: 600; }
+    p { font-size: 14px; color: #333; line-height: 1.7; margin: 0 0 14px; }
+    .cta-btn { display: block; width: fit-content; margin: 24px auto; padding: 13px 32px; background: #1565c0; color: white; text-decoration: none; border-radius: 6px; font-size: 15px; font-weight: 600; text-align: center; }
+    .warning { font-size: 12px; color: #999; text-align: center; margin-top: 8px; }
+    .footer { background: #f5f5f5; padding: 14px 28px; font-size: 11px; color: #aaa; border-top: 1px solid #e0e0e0; text-align: center; }
+    .divider { border: none; border-top: 1px solid #eee; margin: 20px 0; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <div class="logo">CT</div>
+    <p class="header-title">CorpTech S.A. · Seguridad Informática</p>
+  </div>
+  <div class="body">
+    <div class="alert-bar">⚠ Acción requerida: verificación de identidad pendiente</div>
+    <p>Estimado colaborador,</p>
+    <p>Nuestros sistemas han detectado un intento de acceso no autorizado desde una ubicación desconocida a tu cuenta corporativa. Para proteger tu cuenta, necesitamos verificar tu identidad de inmediato.</p>
+    <p>Por favor, accede al portal de verificación en las próximas <strong>24 horas</strong>. Si no realizas la verificación, tu cuenta será suspendida temporalmente por seguridad.</p>
+    <a href="${phishingUrl}" class="cta-btn">Verificar mi cuenta ahora</a>
+    <p class="warning">Si no puedes hacer clic en el botón, copia este enlace: ${phishingUrl}</p>
+    <hr class="divider">
+    <p style="font-size:13px; color:#666;">Si crees que este mensaje es un error, contacta a soporte en <a href="mailto:soporte@corptech.com">soporte@corptech.com</a> o al interno <strong>1234</strong>.</p>
+    <p style="font-size:13px; color:#666;">Atentamente,<br><strong>Equipo de Seguridad Informática</strong><br>CorpTech S.A.</p>
+  </div>
+  <div class="footer">© 2026 CorpTech S.A. · Este mensaje fue enviado a tu correo corporativo registrado.</div>
+</div>
+</body>
+</html>`;
   }
 
   private buildPlainText(sessionId: string): string {

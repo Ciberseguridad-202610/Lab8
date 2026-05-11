@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import {
   getStats,
   getInteractions,
+  sendLure,
   sendFollowup,
   purgeInteractions,
 } from "@/lib/api";
@@ -36,6 +37,8 @@ export default function AdminPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [interactions, setInteractions] = useState<Interaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lureTarget, setLureTarget] = useState("");
+  const [lureStatus, setLureStatus] = useState("");
   const [emailTarget, setEmailTarget] = useState("");
   const [emailSessionId, setEmailSessionId] = useState("");
   const [emailStatus, setEmailStatus] = useState("");
@@ -52,6 +55,17 @@ export default function AdminPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const handleSendLure = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLureStatus("Enviando...");
+    try {
+      const result = await sendLure(lureTarget);
+      setLureStatus(`Enviado ✓ ID: ${result.messageId} — Revisa MailHog en localhost:8025`);
+    } catch {
+      setLureStatus("Error al enviar");
+    }
+  };
 
   const handleSendEmail = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,6 +259,38 @@ export default function AdminPage() {
             almacenan únicamente como hash SHA-256 irreversible. No se guardan
             contraseñas ni datos personales identificables.
           </div>
+        </section>
+
+        {/* Envío de correo de phishing (cebo) */}
+        <section style={{ ...styles.card, borderTop: "4px solid #c62828" }}>
+          <h2 style={{ ...styles.cardTitle, color: "#c62828" }}>
+            Enviar Correo de Phishing (Cebo)
+          </h2>
+          <p style={{ fontSize: "14px", color: "#666", marginBottom: "16px" }}>
+            Envía el correo simulado de phishing a un destinatario. Aparecerá en{" "}
+            <a href="http://localhost:8025" target="_blank" rel="noreferrer" style={{ color: "#1565c0" }}>
+              MailHog (localhost:8025)
+            </a>
+            . Contiene el enlace a <code>/phishing</code>.
+          </p>
+          <form onSubmit={handleSendLure} style={styles.emailForm}>
+            <input
+              type="email"
+              placeholder="destinatario@ejemplo.com"
+              value={lureTarget}
+              onChange={(e) => setLureTarget(e.target.value)}
+              required
+              style={styles.input}
+            />
+            <button type="submit" style={{ ...styles.sendBtn, background: "#c62828" }}>
+              Enviar correo cebo
+            </button>
+          </form>
+          {lureStatus && (
+            <p style={{ ...styles.emailStatus, background: "#fff8f8", color: "#c62828" }}>
+              {lureStatus}
+            </p>
+          )}
         </section>
 
         {/* Envío de correo formativo */}

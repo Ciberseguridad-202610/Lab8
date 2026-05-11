@@ -3,9 +3,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Interaction } from './interaction.entity';
 import { InteractionsController } from './interactions.controller';
 import { InteractionsService } from './interactions.service';
+import { EmailModule } from '../email/email.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Interaction])],
+  imports: [TypeOrmModule.forFeature([Interaction]), EmailModule],
   controllers: [InteractionsController],
   providers: [InteractionsService],
 })
