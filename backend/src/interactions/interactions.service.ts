@@ -47,7 +47,8 @@ export class InteractionsService {
 
   // Eliminar todos los registros (retención de datos / derecho al olvido)
   async purgeAll(): Promise<{ deleted: number }> {
-    const result = await this.repo.delete({});
-    return { deleted: result.affected || 0 };
+    const count = await this.repo.count();
+    await this.repo.clear();
+    return { deleted: count };
   }
 }
