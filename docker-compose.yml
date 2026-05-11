@@ -1,0 +1,67 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: phishing_sim_db
+    environment:
+      POSTGRES_USER: phishing
+      POSTGRES_PASSWORD: phishing
+      POSTGRES_DB: phishing_sim
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U phishing -d phishing_sim"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: phishing_sim_mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: phishing_sim_backend
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      FRONTEND_URL: http://localhost:3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: phishing
+      DB_PASS: phishing
+      DB_NAME: phishing_sim
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: phishing_sim_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+      NEXT_PUBLIC_LEGITIMATE_PORTAL: /legitimo
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:
