@@ -12,6 +12,7 @@ Correo ficticio -> /phishing -> log evento -> /awareness -> portal legítimo
 | ---------------- | ----------- | ---------------------------------------- |
 | Next.js Frontend | 3000        | Portal simulado, página educativa, admin |
 | NestJS Backend   | 3001        | API REST, registro de metadatos, email   |
+| PostgreSQL       | 5432        | Base de datos de eventos e interacciones |
 | MailHog (SMTP)   | 1025 / 8025 | Captura correos localmente sin enviarlos |
 
 ### Páginas del front
@@ -32,8 +33,9 @@ docker-compose up --build
 Luego acceder a:
 
 - Frontend: http://localhost:3000
+- Backend API: http://localhost:3001
 - MailHog UI: http://localhost:8025
-- API: http://localhost:3001
+- PostgreSQL: http://localhost:5432
 
 ## API Endpoints
 
@@ -72,21 +74,23 @@ POST /email/followup
 - Endpoint `DELETE /interactions/purge` para eliminación segura de todos los registros
 - MailHog captura correos **localmente** — nunca salen a internet
 
-## Reflexión sobre el uso de IA en contextos académicos
+## Reflexión sobre el uso de IA en nuestro desarrollo
 
-El uso de modelos de lenguaje en contextos académicos presenta tanto oportunidades como responsabilidades. En este laboratorio, la IA fue utilizada para generar el andamiaje técnico (código de servidor, plantillas de correo, páginas web).
+Como estudiantes, utilizamos IA para acelerar la implementación de este laboratorio, generando el andamiaje técnico (código de servidor, plantillas de correo, páginas web). Esto nos ha permitido reflexionar sobre cómo estas herramientas pueden tanto potenciar como limitar nuestro aprendizaje.
 
-**Oportunidades:**
+**Lo que nos resultó útil:**
 
-- Acelerar la implementación de prototipos educativos complejos
-- Generar plantillas de código que el estudiante puede analizar, modificar y aprender de ellas
-- Asegurar buenas prácticas (no almacenar contraseñas, hashing de datos) por defecto
+- Acelerar la construcción de prototipos educativos complejos sin quedar atrapados en detalles de infraestructura
+- Tener plantillas de código bien estructuradas que podemos analizar, entender y modificar
+- Contar con buenas prácticas incorporadas desde el inicio (no almacenar credenciales, hash de datos sensibles)
 
-**Responsabilidades y riesgos:**
+**Lo que hemos aprendido como desafío:**
 
-- El estudiante debe comprender y auditar el código generado, no simplemente entregarlo
-- Existe el riesgo de aprendizaje superficial si la IA hace todo el trabajo cognitivo
-- Los modelos pueden reproducir patrones inseguros si no se les dan restricciones claras
-- En ejercicios de seguridad, la IA debe operar bajo el principio de "herramienta de concientización", nunca de "herramienta de ataque"
+- No podemos simplemente entregar código generado por IA sin comprenderlo profundamente. Cada línea requiere auditoría y validación
+- Hay riesgo real de aprendizaje superficial si dejamos que la IA resuelva todos los problemas cognitivos
+- La IA reproduce patrones según sus restricciones; si no le damos instrucciones claras sobre seguridad, puede generar código vulnerable
+- En un ejercicio sobre phishing, es crítico que la IA se vea como una herramienta de conciencia, nunca como un facilitador de ataques reales
 
-**Principio rector:** La IA en academia debe amplificar la comprensión del estudiante, no reemplazarla. El valor está en saber _por qué_ funciona el código, no solo en que funcione.
+**Lo que sacamos de esto:**
+
+Entendemos que el verdadero valor no está en que el código "funcione", sino en saber por qué funciona. La IA es una herramienta para amplificar nuestras capacidades, no para reemplazar el pensamiento crítico. En ciberseguridad especialmente, la comprensión profunda es indispensable.
