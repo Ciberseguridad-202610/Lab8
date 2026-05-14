@@ -4,7 +4,9 @@
 
 ### Flujo de simulación
 
-Correo ficticio -> /phishing -> log evento -> /awareness -> portal legítimo
+Correo ficticio -> /phishing -> log evento -> /awareness -> /legitimo
+
+La ruta raíz redirige automáticamente a `/phishing` y la página de concienciación usa un contador para llevar al portal legítimo, configurable con `NEXT_PUBLIC_LEGITIMATE_PORTAL`.
 
 ### Componentes
 
@@ -17,10 +19,11 @@ Correo ficticio -> /phishing -> log evento -> /awareness -> portal legítimo
 
 ### Páginas del front
 
-- `/phishing` - Portal de login simulado (evil twin)
-- `/awareness` - Página educativa + countdown de redirección
+- `/` - Redirección directa al portal de phishing simulado
+- `/phishing` - Portal de login simulado (evil twin) con registro de `PAGE_VISIT`, `FORM_SUBMIT` y `LINK_CLICK`
+- `/awareness` - Página educativa con checklist y countdown de redirección
 - `/legitimo` - Página legítima simulada
-- `/admin` - Dashboard con logs, stats y envío de correos
+- `/admin` - Dashboard con logs, stats, purga segura y envío de correos cebo / formativos
 
 ## Inicio rápido (desarrollo local)
 
@@ -39,13 +42,16 @@ Luego acceder a:
 
 ## API Endpoints
 
-| Método   | Ruta                  | Descripción                     |
-| -------- | --------------------- | ------------------------------- |
-| `POST`   | `/interactions`       | Registrar evento de interacción |
-| `GET`    | `/interactions`       | Listar todos los eventos        |
-| `GET`    | `/interactions/stats` | Estadísticas agregadas          |
-| `DELETE` | `/interactions/purge` | Eliminar todos los registros    |
-| `POST`   | `/email/followup`     | Enviar correo educativo         |
+| Método   | Ruta                  | Descripción                              |
+| -------- | --------------------- | ---------------------------------------- |
+| `POST`   | `/interactions`       | Registrar evento de interacción          |
+| `GET`    | `/interactions`       | Listar todos los eventos                 |
+| `GET`    | `/interactions/stats` | Estadísticas agregadas                   |
+| `DELETE` | `/interactions/purge` | Eliminar todos los registros             |
+| `POST`   | `/email/lure`         | Enviar correo de cebo al portal phishing |
+| `POST`   | `/email/followup`     | Enviar correo educativo                  |
+
+El envío de correo formativo también se dispara automáticamente cuando se registra un `FORM_SUBMIT` con correo válido.
 
 ### Ejemplo: registrar evento
 
@@ -53,7 +59,8 @@ Luego acceder a:
 POST /interactions
 {
   "sessionId": "uuid-generado-en-cliente",
-  "action": "FORM_SUBMIT"
+  "action": "FORM_SUBMIT",
+  "email": "usuario@lab.local"
 }
 ```
 
@@ -73,8 +80,9 @@ También se puede hacer desde el panel del administrador.
 
 ## Mecanismo de privacidad
 
-- Las credenciales son descartadas en el cliente antes de cualquier petición al backend después de enviar el correo formativo.
+- La contraseña se descarta en el cliente antes de cualquier petición al backend, solo se registra el correo del participante si se necesita para el seguimiento educativo.
 - IP y User-Agent se almacenan únicamente como hash SHA-256 irreversible
+- El identificador de sesión se genera en el cliente y se guarda en `sessionStorage` como `sim_session_id`
 - Endpoint `DELETE /interactions/purge` para eliminación segura de todos los registros
 - MailHog captura correos localmente — nunca salen a internet
 
