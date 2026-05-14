@@ -1,13 +1,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import {
-  getStats,
-  getInteractions,
-  sendLure,
-  sendFollowup,
-  purgeInteractions,
-} from "@/lib/api";
+import { getStats, getInteractions, purgeInteractions } from "@/lib/api";
+import { sendLure, sendFollowup } from "@/lib/mail-service";
 
 interface Stats {
   total: number;
@@ -61,7 +56,9 @@ export default function AdminPage() {
     setLureStatus("Enviando...");
     try {
       const result = await sendLure(lureTarget);
-      setLureStatus(`Enviado ✓ ID: ${result.messageId} — Revisa MailHog en localhost:8025`);
+      setLureStatus(
+        `Enviado ✓ ID: ${result.messageId} — Revisa MailHog en localhost:8025`,
+      );
     } catch {
       setLureStatus("Error al enviar");
     }
@@ -268,7 +265,12 @@ export default function AdminPage() {
           </h2>
           <p style={{ fontSize: "14px", color: "#666", marginBottom: "16px" }}>
             Envía el correo simulado de phishing a un destinatario. Aparecerá en{" "}
-            <a href="http://localhost:8025" target="_blank" rel="noreferrer" style={{ color: "#1565c0" }}>
+            <a
+              href="http://localhost:8025"
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: "#1565c0" }}
+            >
               MailHog (localhost:8025)
             </a>
             . Contiene el enlace a <code>/phishing</code>.
@@ -282,12 +284,21 @@ export default function AdminPage() {
               required
               style={styles.input}
             />
-            <button type="submit" style={{ ...styles.sendBtn, background: "#c62828" }}>
+            <button
+              type="submit"
+              style={{ ...styles.sendBtn, background: "#c62828" }}
+            >
               Enviar correo cebo
             </button>
           </form>
           {lureStatus && (
-            <p style={{ ...styles.emailStatus, background: "#fff8f8", color: "#c62828" }}>
+            <p
+              style={{
+                ...styles.emailStatus,
+                background: "#fff8f8",
+                color: "#c62828",
+              }}
+            >
               {lureStatus}
             </p>
           )}

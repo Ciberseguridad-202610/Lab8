@@ -57,6 +57,8 @@ POST /interactions
 }
 ```
 
+Esto ocurre automáticamente desde la página evil twin.
+
 ### Ejemplo: enviar correo formativo
 
 ```json
@@ -67,12 +69,14 @@ POST /email/followup
 }
 ```
 
+También se puede hacer desde el panel del administrador.
+
 ## Mecanismo de privacidad
 
-- Las credenciales son **descartadas en el cliente** antes de cualquier petición al backend
-- IP y User-Agent se almacenan únicamente como **hash SHA-256 irreversible**
+- Las credenciales son descartadas en el cliente antes de cualquier petición al backend después de enviar el correo formativo.
+- IP y User-Agent se almacenan únicamente como hash SHA-256 irreversible
 - Endpoint `DELETE /interactions/purge` para eliminación segura de todos los registros
-- MailHog captura correos **localmente** — nunca salen a internet
+- MailHog captura correos localmente — nunca salen a internet
 
 ## Reflexión sobre el uso de IA en nuestro desarrollo
 
